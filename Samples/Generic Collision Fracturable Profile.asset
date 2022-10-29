@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc289d3fd5babb94f9fcfa2e0c5f6cfd, type: 3}
+  m_Name: Generic Collision Fracturable Profile
+  m_EditorClassIdentifier: 
+  destroyOriginal: 1
+  fragmentRootPrefab: {fileID: 2691432988711808726, guid: 6c81600d073f02c48a9d15428cdde1ed, type: 3}
+  fragmentPrefab: {fileID: -7885515148465868901, guid: a135a1db9de49c346b2b64f20cd307bc, type: 3}
+  triggerOptions:
+    triggerType: 0
+    minimumCollisionForce: 10
+    filterCollisionsByTag: 0
+    triggerAllowedTags: []
+    triggerKey: 0
+  fractureOptions:
+    fragmentCount: 10
+    xAxis: 1
+    yAxis: 1
+    zAxis: 1
+    detectFloatingFragments: 0
+    asynchronous: 1
+    insideMaterial: {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+    textureScale: {x: 1, y: 1}
+    textureOffset: {x: 0, y: 0}
+  refractureOptions:
+    enableRefracturing: 0
+    maxRefractureCount: 1
+    invokeCallbacks: 0

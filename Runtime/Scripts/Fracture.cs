@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Scripting;
 
 namespace OpenFracture
 {
@@ -12,25 +13,31 @@ namespace OpenFracture
     [RequireComponent(typeof(Rigidbody))]
     public class Fracture : MonoBehaviour
     {
-        public TriggerOptions triggerOptions;
-        public FractureOptions fractureOptions;
-        public RefractureOptions refractureOptions;
-        public CallbackOptions callbackOptions;
-
         [SerializeField]
         private bool _destroyOriginal = true;
+        public bool DestroyOriginal { get => _destroyOriginal; set => _destroyOriginal = value; }
+        [SerializeField]
+        private FragmentRoot _fragmentRootPrefab;
+
+        public FragmentRoot FragmentRootPrefab { get => _fragmentRootPrefab; set => _fragmentRootPrefab = value; }
+        [SerializeField]
+        private Fragment _fragmentPrefab;
+        public Fragment FragmentPrefab { get => _fragmentPrefab; set => _fragmentPrefab = value; }
+
+        [SerializeField]
+        private FragmentRoot _fragmentRoot;
+        public FragmentRoot FragmentRoot { get => _fragmentRoot; set => _fragmentRoot = value; }
+        
+        public TriggerOptions _triggerOptions;
+        public FractureOptions _fractureOptions;
+        public RefractureOptions _refractureOptions;
+        public CallbackOptions _callbackOptions;
 
         /// <summary>
         /// The number of times this fragment has been re-fractured.
         /// </summary>
         [HideInInspector]
         public int currentRefractureCount = 0;
-
-        /// <summary>
-        /// Collector object that stores the produced fragments
-        /// </summary>
-        [SerializeField]
-        private GameObject fragmentRoot;
 
         [ContextMenu("Print Mesh Info")]
         public void PrintMeshInfo()
@@ -56,7 +63,7 @@ namespace OpenFracture
         [ContextMenu("CauseFracture")]
         public void CauseFracture()
         {
-            callbackOptions.CallOnFracture(null, gameObject, transform.position);
+            _callbackOptions.CallOnFracture(null, gameObject, transform.position);
             this.ComputeFracture();
         }
 
@@ -75,46 +82,6 @@ namespace OpenFracture
             }
         }
 
-        void OnCollisionEnter(Collision collision)
-        {
-            if (triggerOptions.triggerType == TriggerType.Collision)
-            {
-                if (collision.contactCount > 0)
-                {
-                    // Collision force must exceed the minimum force (F = I / T)
-                    var contact = collision.contacts[0];
-                    float collisionForce = collision.impulse.magnitude / Time.fixedDeltaTime;
-
-                    // Colliding object tag must be in the set of allowed collision tags if filtering by tag is enabled
-                    bool tagAllowed = triggerOptions.IsTagAllowed(contact.otherCollider.gameObject.tag);
-
-                    // Object is unfrozen if the colliding object has the correct tag (if tag filtering is enabled)
-                    // and the collision force exceeds the minimum collision force.
-                    if (collisionForce > triggerOptions.minimumCollisionForce &&
-                       (!triggerOptions.filterCollisionsByTag || tagAllowed))
-                    {
-                        callbackOptions.CallOnFracture(contact.otherCollider, gameObject, contact.point);
-                        this.ComputeFracture();
-                    }
-                }
-            }
-        }
-
-        void OnTriggerEnter(Collider collider)
-        {
-            if (triggerOptions.triggerType == TriggerType.Trigger)
-            {
-                // Colliding object tag must be in the set of allowed collision tags if filtering by tag is enabled
-                bool tagAllowed = triggerOptions.IsTagAllowed(collider.gameObject.tag);
-
-                if (!triggerOptions.filterCollisionsByTag || tagAllowed)
-                {
-                    callbackOptions.CallOnFracture(collider, gameObject, transform.position);
-                    this.ComputeFracture();
-                }
-            }
-        }
-
         /// <summary>
         /// Compute the fracture and create the fragments
         /// </summary>
@@ -126,26 +93,26 @@ namespace OpenFracture
             if (mesh != null)
             {
                 // If the fragment root object has not yet been created, create it now
-                if (this.fragmentRoot == null)
+                if (this._fragmentRoot == null)
                 {
                     // Create a game object to contain the fragments
-                    this.fragmentRoot = new GameObject($"{this.name}Fragments");
-                    this.fragmentRoot.transform.SetParent(this.transform.parent);
+                    this._fragmentRoot = Instantiate<FragmentRoot>(original: _fragmentRootPrefab, parent: this.transform.parent);
+                    this._fragmentRoot.name = ($"{this.name}-Fragments");
                 }
                 // Each fragment will handle its own scale
-                this.fragmentRoot.transform.position = this.transform.position;
-                this.fragmentRoot.transform.rotation = this.transform.rotation;
-                this.fragmentRoot.transform.localScale = UnityEngine.Vector3.one;
+                this._fragmentRoot.transform.position = this.transform.position;
+                this._fragmentRoot.transform.rotation = this.transform.rotation;
+                this._fragmentRoot.transform.localScale = UnityEngine.Vector3.one;
 
                 var fragmentTemplate = CreateFragmentTemplate();
 
-                if (fractureOptions.asynchronous)
+                if (_fractureOptions.asynchronous)
                 {
                     StartCoroutine(Fragmenter.FractureAsync(
                         this.gameObject,
-                        this.fractureOptions,
+                        this._fractureOptions,
                         fragmentTemplate,
-                        this.fragmentRoot.transform,
+                        this._fragmentRoot.transform,
                         () =>
                         {
                             // Done with template, destroy it
@@ -156,11 +123,11 @@ namespace OpenFracture
 
                             // Fire the completion callback
                             if ((this.currentRefractureCount == 0) ||
-                                (this.currentRefractureCount > 0 && this.refractureOptions.invokeCallbacks))
+                                (this.currentRefractureCount > 0 && this._refractureOptions.invokeCallbacks))
                             {
-                                if (callbackOptions.onCompleted != null)
+                                if (_callbackOptions.onCompleted != null)
                                 {
-                                    callbackOptions.onCompleted.Invoke();
+                                    _callbackOptions.onCompleted.Invoke();
                                 }
                             }
                             if (_destroyOriginal)
@@ -171,9 +138,9 @@ namespace OpenFracture
                 else
                 {
                     Fragmenter.Fracture(this.gameObject,
-                                        this.fractureOptions,
+                                        this._fractureOptions,
                                         fragmentTemplate,
-                                        this.fragmentRoot.transform);
+                                        this._fragmentRoot.transform);
 
                     // Done with template, destroy it
                     GameObject.Destroy(fragmentTemplate);
@@ -183,11 +150,11 @@ namespace OpenFracture
 
                     // Fire the completion callback
                     if ((this.currentRefractureCount == 0) ||
-                        (this.currentRefractureCount > 0 && this.refractureOptions.invokeCallbacks))
+                        (this.currentRefractureCount > 0 && this._refractureOptions.invokeCallbacks))
                     {
-                        if (callbackOptions.onCompleted != null)
+                        if (_callbackOptions.onCompleted != null)
                         {
-                            callbackOptions.onCompleted.Invoke();
+                            _callbackOptions.onCompleted.Invoke();
                         }
                     }
                 }
@@ -214,7 +181,7 @@ namespace OpenFracture
             var meshRenderer = obj.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterials = new Material[2] {
             this.GetComponent<MeshRenderer>().sharedMaterial,
-            this.fractureOptions.insideMaterial
+            this._fractureOptions.insideMaterial
         };
 
             // Copy collider properties to fragment
@@ -234,8 +201,8 @@ namespace OpenFracture
             fragmentRigidBody.useGravity = thisRigidBody.useGravity;
 
             // If refracturing is enabled, create a copy of this component and add it to the template fragment object
-            if (refractureOptions.enableRefracturing &&
-               (this.currentRefractureCount < refractureOptions.maxRefractureCount))
+            if (_refractureOptions.enableRefracturing &&
+               (this.currentRefractureCount < _refractureOptions.maxRefractureCount))
             {
                 CopyFractureComponent(obj);
             }
@@ -251,12 +218,12 @@ namespace OpenFracture
         {
             var fractureComponent = obj.AddComponent<Fracture>();
 
-            fractureComponent.triggerOptions = this.triggerOptions;
-            fractureComponent.fractureOptions = this.fractureOptions;
-            fractureComponent.refractureOptions = this.refractureOptions;
-            fractureComponent.callbackOptions = this.callbackOptions;
+            fractureComponent._triggerOptions = this._triggerOptions;
+            fractureComponent._fractureOptions = this._fractureOptions;
+            fractureComponent._refractureOptions = this._refractureOptions;
+            fractureComponent._callbackOptions = this._callbackOptions;
             fractureComponent.currentRefractureCount = this.currentRefractureCount + 1;
-            fractureComponent.fragmentRoot = this.fragmentRoot;
+            fractureComponent._fragmentRoot = this._fragmentRoot;
         }
     }
 }
