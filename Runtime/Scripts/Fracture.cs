@@ -33,6 +33,11 @@ namespace OpenFracture
         public RefractureOptions _refractureOptions;
         public CallbackOptions _callbackOptions;
 
+        public event Action fractureComplete;
+
+        private Fragment _fragment;
+        private GameObject FragmentGO => _fragment? _fragment.gameObject : null;
+
         /// <summary>
         /// The number of times this fragment has been re-fractured.
         /// </summary>
@@ -117,19 +122,19 @@ namespace OpenFracture
                         {
                             // Done with template, destroy it
                             GameObject.Destroy(fragmentTemplate);
-
-                            // Deactivate the original object
-                            this.gameObject.SetActive(false);
-
+                            
                             // Fire the completion callback
                             if ((this.currentRefractureCount == 0) ||
                                 (this.currentRefractureCount > 0 && this._refractureOptions.invokeCallbacks))
                             {
+                                fractureComplete?.Invoke();
                                 if (_callbackOptions.onCompleted != null)
                                 {
                                     _callbackOptions.onCompleted.Invoke();
                                 }
                             }
+                            // Deactivate the original object
+                            this.gameObject.SetActive(false);
                             if (_destroyOriginal)
                                 GameObject.Destroy(this.gameObject);
                         }
@@ -145,18 +150,18 @@ namespace OpenFracture
                     // Done with template, destroy it
                     GameObject.Destroy(fragmentTemplate);
 
-                    // Deactivate the original object
-                    this.gameObject.SetActive(false);
-
                     // Fire the completion callback
                     if ((this.currentRefractureCount == 0) ||
                         (this.currentRefractureCount > 0 && this._refractureOptions.invokeCallbacks))
                     {
+                        fractureComplete?.Invoke();
                         if (_callbackOptions.onCompleted != null)
                         {
                             _callbackOptions.onCompleted.Invoke();
                         }
                     }
+                    // Deactivate the original object
+                    this.gameObject.SetActive(false);
                 }
             }
         }
@@ -170,15 +175,15 @@ namespace OpenFracture
         {
             // If pre-fracturing, make the fragments children of this object so they can easily be unfrozen later.
             // Otherwise, parent to this object's parent
-            GameObject obj = new GameObject();
-            obj.name = "Fragment";
-            obj.tag = this.tag;
+            _fragment = Instantiate<Fragment>(FragmentPrefab);
+            FragmentGO.name = "Fragment";
+            FragmentGO.tag = this.tag;
 
             // Update mesh to the new sliced mesh
-            obj.AddComponent<MeshFilter>();
+            FragmentGO.AddComponent<MeshFilter>();
 
             // Add materials. Normal material goes in slot 1, cut material in slot 2
-            var meshRenderer = obj.AddComponent<MeshRenderer>();
+            var meshRenderer = FragmentGO.AddComponent<MeshRenderer>();
             meshRenderer.sharedMaterials = new Material[2] {
             this.GetComponent<MeshRenderer>().sharedMaterial,
             this._fractureOptions.insideMaterial
@@ -186,14 +191,14 @@ namespace OpenFracture
 
             // Copy collider properties to fragment
             var thisCollider = this.GetComponent<Collider>();
-            var fragmentCollider = obj.AddComponent<MeshCollider>();
+            var fragmentCollider = FragmentGO.AddComponent<MeshCollider>();
             fragmentCollider.convex = true;
             fragmentCollider.sharedMaterial = thisCollider.sharedMaterial;
             fragmentCollider.isTrigger = thisCollider.isTrigger;
 
             // Copy rigid body properties to fragment
             var thisRigidBody = this.GetComponent<Rigidbody>();
-            var fragmentRigidBody = obj.AddComponent<Rigidbody>();
+            var fragmentRigidBody = FragmentGO.AddComponent<Rigidbody>();
             fragmentRigidBody.velocity = thisRigidBody.velocity;
             fragmentRigidBody.angularVelocity = thisRigidBody.angularVelocity;
             fragmentRigidBody.drag = thisRigidBody.drag;
@@ -204,10 +209,10 @@ namespace OpenFracture
             if (_refractureOptions.enableRefracturing &&
                (this.currentRefractureCount < _refractureOptions.maxRefractureCount))
             {
-                CopyFractureComponent(obj);
+                CopyFractureComponent(FragmentGO);
             }
 
-            return obj;
+            return FragmentGO;
         }
 
         /// <summary>

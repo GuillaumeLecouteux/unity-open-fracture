@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -26,8 +27,6 @@ namespace OpenFracture
 
         private void Awake()
         {
-            CopyFractureProfile();
-
             // disable and reset fragment root
             if (_fragmentRoot == null)
             {
@@ -38,9 +37,21 @@ namespace OpenFracture
             _fragmentRoot.transform.localPosition = Vector3.zero;
             _fragmentRoot.transform.localRotation = Quaternion.identity;
             _fragmentRoot.transform.localScale = Vector3.one;
+
+            CopyFractureProfile();
         }
 
-            [Button]
+        private void OnEnable()
+        {
+            _fracture.fractureComplete += OnFragmentCompletion;
+        }
+
+        private void OnDisable()
+        {
+            _fracture.fractureComplete -= OnFragmentCompletion;
+        }
+
+        [Button]
         public void Fracture()
         {
             _fragmentRoot.transform.parent = this.transform.parent; // move one level up to avoid being destroyed into oblivion.
@@ -60,6 +71,12 @@ namespace OpenFracture
                 Destroy(this.gameObject);
             else
                 this.gameObject.SetActive(false);
+            OnFragmentCompletion();
+        }
+
+        private void OnFragmentCompletion()
+        {
+            _fragmentRoot.OnFragmentCompletion();
         }
 
         [Button]
