@@ -1,8 +1,11 @@
 using UnityEditor;
 
-[CustomEditor(typeof(Prefracture))]
-[CanEditMultipleObjects]
-public class PrefractureEditor : Editor
+namespace OpenFracture
 {
-    // Empty editor required for custom property drawers to work properly
+    [CustomEditor(typeof(Prefracture))]
+    [CanEditMultipleObjects]
+    public class PrefractureEditor : Editor
+    {
+        // Empty editor required for custom property drawers to work properly
+    }
 }

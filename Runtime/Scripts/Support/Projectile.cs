@@ -1,26 +1,29 @@
 using UnityEngine;
 using UnityEngine.TestTools;
 
-[ExcludeFromCoverage]
-public class Projectile : MonoBehaviour
+namespace OpenFracture
 {
-    public GameObject projectile;
-    public float initialVelocity;
-    public KeyCode FireKey;
-
-    // Update is called once per frame
-    void Update()
+    [ExcludeFromCoverage]
+    public class Projectile : MonoBehaviour
     {
-        if (Input.GetKeyDown(FireKey))
-        {
-            // Remove other projectiles from the scene
-            foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Projectile"))
-            {
-                GameObject.Destroy(obj);
-            }
+        public GameObject projectile;
+        public float initialVelocity;
+        public KeyCode FireKey;
 
-            var projectileInstance = GameObject.Instantiate(projectile, this.transform.position, Quaternion.identity);
-            projectileInstance.GetComponent<Rigidbody>().velocity = initialVelocity * this.transform.forward;
+        // Update is called once per frame
+        void Update()
+        {
+            if (Input.GetKeyDown(FireKey))
+            {
+                // Remove other projectiles from the scene
+                foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Projectile"))
+                {
+                    GameObject.Destroy(obj);
+                }
+
+                var projectileInstance = GameObject.Instantiate(projectile, this.transform.position, Quaternion.identity);
+                projectileInstance.GetComponent<Rigidbody>().velocity = initialVelocity * this.transform.forward;
+            }
         }
     }
 }

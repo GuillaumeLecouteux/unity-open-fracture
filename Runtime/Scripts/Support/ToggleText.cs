@@ -1,17 +1,20 @@
 using UnityEngine;
 
-public class ToggleText : MonoBehaviour
+namespace OpenFracture
 {
-    public KeyCode toggleKey;
-
-    public GameObject textObject;
-
-    // Start is called before the first frame update
-    void Update()
+    public class ToggleText : MonoBehaviour
     {
-        if (Input.GetKeyDown(toggleKey))
+        public KeyCode toggleKey;
+
+        public GameObject textObject;
+
+        // Start is called before the first frame update
+        void Update()
         {
-            textObject.SetActive(!textObject.activeSelf);
+            if (Input.GetKeyDown(toggleKey))
+            {
+                textObject.SetActive(!textObject.activeSelf);
+            }
         }
     }
 }

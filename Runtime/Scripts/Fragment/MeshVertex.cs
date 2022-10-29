@@ -1,54 +1,57 @@
 using UnityEngine;
 using UnityEngine.TestTools;
 
-/// <summary>
-/// Data structure containing position/normal/UV data for a single vertex
-/// </summary>
-public struct MeshVertex
+namespace OpenFracture
 {
-    public Vector3 position;
-    public Vector3 normal;
-    public Vector2 uv;
-
-    public MeshVertex(Vector3 position)
+    /// <summary>
+    /// Data structure containing position/normal/UV data for a single vertex
+    /// </summary>
+    public struct MeshVertex
     {
-        this.position = position;
-        this.normal = Vector3.zero;
-        this.uv = Vector2.zero;
-    }
+        public Vector3 position;
+        public Vector3 normal;
+        public Vector2 uv;
 
-    public MeshVertex(Vector3 position, Vector3 normal, Vector2 uv)
-    {
-        this.position = position;
-        this.normal = normal;
-        this.uv = uv;
-    }
+        public MeshVertex(Vector3 position)
+        {
+            this.position = position;
+            this.normal = Vector3.zero;
+            this.uv = Vector2.zero;
+        }
 
-    public override bool Equals(object obj)
-    {
-        if (!(obj is MeshVertex)) return false;
-       
-        return ((MeshVertex)obj).position.Equals(this.position);
-    }
+        public MeshVertex(Vector3 position, Vector3 normal, Vector2 uv)
+        {
+            this.position = position;
+            this.normal = normal;
+            this.uv = uv;
+        }
 
-    public static bool operator ==(MeshVertex lhs, MeshVertex rhs)
-    {
-        return lhs.Equals(rhs);
-    }
+        public override bool Equals(object obj)
+        {
+            if (!(obj is MeshVertex)) return false;
 
-    public static bool operator !=(MeshVertex lhs, MeshVertex rhs)
-    {
-        return !lhs.Equals(rhs);
-    }
+            return ((MeshVertex)obj).position.Equals(this.position);
+        }
 
-    public override int GetHashCode()
-    {
-        return this.position.GetHashCode();
-    }
+        public static bool operator ==(MeshVertex lhs, MeshVertex rhs)
+        {
+            return lhs.Equals(rhs);
+        }
 
-    [ExcludeFromCoverage]
-    public override string ToString()
-    {
-        return $"Position = {position}, Normal = {normal}, UV = {uv}";
+        public static bool operator !=(MeshVertex lhs, MeshVertex rhs)
+        {
+            return !lhs.Equals(rhs);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.position.GetHashCode();
+        }
+
+        [ExcludeFromCoverage]
+        public override string ToString()
+        {
+            return $"Position = {position}, Normal = {normal}, UV = {uv}";
+        }
     }
 }

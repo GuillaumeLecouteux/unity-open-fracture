@@ -1,63 +1,66 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomPropertyDrawer(typeof(PrefractureOptions))]
-public class PrefractureOptionsPropertyDrawer : PropertyDrawer
-{   
-    private static bool foldout = true;
-
-    // Draw the property inside the given rect
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+namespace OpenFracture
+{
+    [CustomPropertyDrawer(typeof(PrefractureOptions))]
+    public class PrefractureOptionsPropertyDrawer : PropertyDrawer
     {
-        var unfreezeAll = property.FindPropertyRelative("unfreezeAll");
-        var saveFragmentsToDisk = property.FindPropertyRelative("saveFragmentsToDisk");
-        var saveLocation = property.FindPropertyRelative("saveLocation");
+        private static bool foldout = true;
 
-        EditorGUI.indentLevel = 0;
-        foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
-
-        if (foldout)
+        // Draw the property inside the given rect
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            EditorGUI.indentLevel = 1;
+            var unfreezeAll = property.FindPropertyRelative("unfreezeAll");
+            var saveFragmentsToDisk = property.FindPropertyRelative("saveFragmentsToDisk");
+            var saveLocation = property.FindPropertyRelative("saveLocation");
 
-            EditorGUILayout.PropertyField(unfreezeAll, new GUIContent("Unfreeze All"));
-            EditorGUILayout.PropertyField(saveFragmentsToDisk, new GUIContent("Save Fragments To Disk"));
+            EditorGUI.indentLevel = 0;
+            foldout = EditorGUILayout.BeginFoldoutHeaderGroup(foldout, label);
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(saveLocation, new GUIContent("Save Location"));
-
-            if (GUILayout.Button(" . . . ", GUILayout.ExpandWidth(false)))
+            if (foldout)
             {
-                string path = EditorUtility.OpenFolderPanel("Select Save Location", "", "");
-                if (path.StartsWith(Application.dataPath))
-                {
-                    saveLocation.stringValue = "Assets" + path.Substring(Application.dataPath.Length);
-                    saveLocation.serializedObject.ApplyModifiedProperties();
-                }
-                else
-                {
-                    throw new System.ArgumentException("Full path does not contain the current project's Assets folder", "absolutePath");
-                }
-            }        
-            EditorGUILayout.EndHorizontal();
+                EditorGUI.indentLevel = 1;
 
-            GUILayout.Space(4);
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(16);
-            if (GUILayout.Button("Prefracture Mesh", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(32) }))
-            {
-                ((Prefracture)property.serializedObject.targetObject).ComputeFracture();
+                EditorGUILayout.PropertyField(unfreezeAll, new GUIContent("Unfreeze All"));
+                EditorGUILayout.PropertyField(saveFragmentsToDisk, new GUIContent("Save Fragments To Disk"));
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PropertyField(saveLocation, new GUIContent("Save Location"));
+
+                if (GUILayout.Button(" . . . ", GUILayout.ExpandWidth(false)))
+                {
+                    string path = EditorUtility.OpenFolderPanel("Select Save Location", "", "");
+                    if (path.StartsWith(Application.dataPath))
+                    {
+                        saveLocation.stringValue = "Assets" + path.Substring(Application.dataPath.Length);
+                        saveLocation.serializedObject.ApplyModifiedProperties();
+                    }
+                    else
+                    {
+                        throw new System.ArgumentException("Full path does not contain the current project's Assets folder", "absolutePath");
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+
+                GUILayout.Space(4);
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(16);
+                if (GUILayout.Button("Prefracture Mesh", new GUILayoutOption[] { GUILayout.ExpandWidth(true), GUILayout.Height(32) }))
+                {
+                    ((Prefracture)property.serializedObject.targetObject).ComputeFracture();
+                }
+                GUILayout.Space(16);
+                EditorGUILayout.EndHorizontal();
+                GUILayout.Space(4);
             }
-            GUILayout.Space(16);
-            EditorGUILayout.EndHorizontal();
-            GUILayout.Space(4);
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUI.indentLevel = 0;
         }
 
-        EditorGUILayout.EndFoldoutHeaderGroup();
-        EditorGUI.indentLevel = 0;
+        // Hack to prevent extra space at top of property drawer. This is due to using EditorGUILayout
+        // in OnGUI, but I don't want to have to manually specify control sizes
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) { return 0; }
     }
-    
-    // Hack to prevent extra space at top of property drawer. This is due to using EditorGUILayout
-    // in OnGUI, but I don't want to have to manually specify control sizes
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label) { return 0; }
 }
