@@ -54,6 +54,8 @@ namespace OpenFracture
         [Button]
         public void Fracture()
         {
+            if (!enabled)
+                return;
             _fragmentRoot.transform.parent = this.transform.parent; // move one level up to avoid being destroyed into oblivion.
             if (HasFragments)
                 ActivateBakedFracture();
