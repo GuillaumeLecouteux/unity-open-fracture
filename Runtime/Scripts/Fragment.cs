@@ -9,8 +9,8 @@ namespace OpenFracture
 
         private void OnDestroy()
         {
-            if (_destroyParentOnDestroy)
-                Destroy(this.transform.parent);
+            if (_destroyParentOnDestroy && this.transform.parent != null)
+                Destroy(this.transform.parent.gameObject);
         }
     }
 }
