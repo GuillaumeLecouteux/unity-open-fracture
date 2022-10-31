@@ -15,6 +15,9 @@ namespace OpenFracture
         private UnityEvent _fragmentCompletionEvent;
         public bool HasFragments => transform.childCount > 0;
 
+        [SerializeField]
+        private bool _destroyParentOnDestroy;
+
         private Component[] _rigidbodies;
 
         private void OnEnable()
@@ -47,6 +50,12 @@ namespace OpenFracture
 
             foreach (Rigidbody rb in _rigidbodies)
                 rb.isKinematic = !enablePhysics;
+        }
+
+        private void OnDestroy()
+        {
+            if (_destroyParentOnDestroy)
+                Destroy(this.transform.parent);
         }
 
     }
