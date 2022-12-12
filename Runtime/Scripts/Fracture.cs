@@ -105,8 +105,7 @@ namespace OpenFracture
                     this._fragmentRoot.name = ($"{this.name}-Fragments");
                 }
                 // Each fragment will handle its own scale
-                this._fragmentRoot.transform.position = this.transform.position;
-                this._fragmentRoot.transform.rotation = this.transform.rotation;
+                this._fragmentRoot.transform.SetPositionAndRotation(this.transform.position, this.transform.rotation);
                 this._fragmentRoot.transform.localScale = UnityEngine.Vector3.one;
 
                 var fragmentTemplate = CreateFragmentTemplate();
