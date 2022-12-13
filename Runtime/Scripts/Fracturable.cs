@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace OpenFracture
 {
@@ -21,6 +22,10 @@ namespace OpenFracture
         [Header("Optional Binding for Baked Fracture")]
         [SerializeField]
         private FragmentRoot _fragmentRoot;
+
+        [Header("Event Response Bindings")]
+        [SerializeField]
+        private UnityEvent _fractureEvent;
 
         [ShowInInspector]
         public bool HasFragments => _fragmentRoot? _fragmentRoot.HasFragments : false;
@@ -56,11 +61,13 @@ namespace OpenFracture
         {
             if (!enabled)
                 return;
+            _fractureEvent?.Invoke();
             _fragmentRoot.transform.parent = this.transform.parent; // move one level up to avoid being destroyed into oblivion.
             if (HasFragments)
                 ActivateBakedFracture();
             else
             {
+                UnityEngine.Debug.LogWarning("ComputeFracture triggered, consider baking fracture.");
                 _fragmentRoot.gameObject.SetActive(true);
                 _fracture.CauseFracture();
             }
